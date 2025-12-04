@@ -1,10 +1,16 @@
 package View;
 
+import Controller.ProyectoController;
+import Controller.SprintController;
+import Model.Usuario;
+import Controller.KanbanController;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class DashboardView extends JFrame {
+
+    private Usuario usuario;
 
     // Sidebar
     public JButton btnProyectos;
@@ -14,10 +20,12 @@ public class DashboardView extends JFrame {
     public JButton btnHistorial;
     public JButton btnCerrar;
 
-    // Panel central donde se cargan otras vistas
+    // Panel central
     public JPanel panelContenido;
 
-    public DashboardView() {
+    public DashboardView(Usuario usuario) {
+        this.usuario = usuario;
+
         setTitle("Dashboard");
         setSize(1100, 700);
         setLocationRelativeTo(null);
@@ -25,7 +33,7 @@ public class DashboardView extends JFrame {
         setLayout(new BorderLayout());
         setResizable(true);
 
-        // ===== SIDEBAR LATERAL =====
+        // ====== SIDEBAR ======
         JPanel sidebar = new JPanel();
         sidebar.setBackground(new Color(0x2D2D2D));
         sidebar.setLayout(new GridLayout(10, 1, 0, 10));
@@ -36,7 +44,7 @@ public class DashboardView extends JFrame {
         titulo.setForeground(Color.WHITE);
         titulo.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Estilo para los botones del sidebar
+        // CREAR BOTONES antes de añadir listeners
         btnProyectos = crearBotonSidebar("Proyectos");
         btnActividades = crearBotonSidebar("Sprints");
         btnKanban = crearBotonSidebar("Kanban Board");
@@ -45,6 +53,7 @@ public class DashboardView extends JFrame {
         btnCerrar = crearBotonSidebar("Cerrar Sesión");
         btnCerrar.setBackground(new Color(0xE94E77));
 
+        // Agregar botones al sidebar
         sidebar.add(titulo);
         sidebar.add(btnProyectos);
         sidebar.add(btnActividades);
@@ -55,57 +64,60 @@ public class DashboardView extends JFrame {
 
         add(sidebar, BorderLayout.WEST);
 
-        // ===== PANEL DE CONTENIDO =====
+        // ====== PANEL CENTRAL ======
         panelContenido = new JPanel(new BorderLayout());
         panelContenido.setBackground(new Color(0xF5F7FA));
 
-        JLabel mensajeInicial = new JLabel("Bienvenido al panel principal", SwingConstants.CENTER);
+        JLabel mensajeInicial = new JLabel("Bienvenido " + usuario.getNombre(),
+                SwingConstants.CENTER);
         mensajeInicial.setFont(new Font("SansSerif", Font.BOLD, 30));
         mensajeInicial.setForeground(new Color(0x2D2D2D));
 
         panelContenido.add(mensajeInicial, BorderLayout.CENTER);
-
         add(panelContenido, BorderLayout.CENTER);
 
-        // ===== CONECTAR BOTONES =====
+        // Conectar los eventos
         conectarEventos();
     }
 
-    // ===========================
-    // MÉTODO PARA CAMBIAR VISTAS
-    // ===========================
-    private void mostrarVista(JPanel vista) {
+    public void mostrarVista(JPanel vista) {
         panelContenido.removeAll();
         panelContenido.add(vista, BorderLayout.CENTER);
         panelContenido.revalidate();
         panelContenido.repaint();
     }
 
-    // ===========================
-    // CONECTAR EVENTOS DEL MENÚ
-    // ===========================
+    // BOTONES DEL MENÚ
     private void conectarEventos() {
 
+        // PROYECTOS
         btnProyectos.addActionListener(e -> {
-            mostrarVista(new ProyectosView());
+            ProyectosView vista = new ProyectosView();
+            new ProyectoController(vista, usuario);
+            mostrarVista(vista);
         });
 
+        // SPRINTS
         btnActividades.addActionListener(e -> {
-            mostrarVista(new SprintView());
+            SprintView vista = new SprintView();
+            new SprintController(vista, usuario);
+            mostrarVista(vista);
         });
 
+        // KANBAN
         btnKanban.addActionListener(e -> {
-            mostrarVista(new KanbanBoardView());
+            KanbanBoardView vista = new KanbanBoardView();
+            new KanbanController(vista, usuario); 
+            mostrarVista(vista);
         });
 
-        btnChat.addActionListener(e -> {
-            mostrarVista(new ChatView());
-        });
+        // CHAT
+        btnChat.addActionListener(e -> mostrarVista(new ChatView()));
 
-        btnHistorial.addActionListener(e -> {
-            mostrarVista(new HistorialView());
-        });
+        // HISTORIAL
+        btnHistorial.addActionListener(e -> mostrarVista(new HistorialView()));
 
+        // CERRAR SESIÓN
         btnCerrar.addActionListener(e -> {
             JOptionPane.showMessageDialog(this,
                     "Sesión cerrada correctamente.", "Salir", JOptionPane.INFORMATION_MESSAGE);
@@ -113,9 +125,6 @@ public class DashboardView extends JFrame {
         });
     }
 
-    // ===========================
-    // ESTILO DE BOTONES DEL MENÚ
-    // ===========================
     private JButton crearBotonSidebar(String text) {
         JButton btn = new JButton(text);
         btn.setFocusPainted(false);

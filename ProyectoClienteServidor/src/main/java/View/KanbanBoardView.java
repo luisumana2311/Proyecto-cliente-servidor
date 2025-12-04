@@ -9,24 +9,35 @@ public class KanbanBoardView extends JPanel {
     public JPanel columnaPendiente;
     public JPanel columnaProgreso;
     public JPanel columnaCompletado;
-
     public JButton btnNuevaTarea;
+    private JLabel labelTitulo;
+    private JLabel labelInfo;
 
     public KanbanBoardView() {
         setLayout(new BorderLayout());
         setBackground(new Color(0xF5F7FA));
-
+        
+        JPanel panelSuperior = new JPanel(new BorderLayout());
+        panelSuperior.setBackground(new Color(0xF5F7FA));
+        panelSuperior.setBorder(new EmptyBorder(20, 20, 10, 20)); 
+        
         // ======= TÍTULO SUPERIOR =======
-        JLabel titulo = new JLabel("Tablero Kanban", SwingConstants.CENTER);
-        titulo.setFont(new Font("SansSerif", Font.BOLD, 24));
-        titulo.setForeground(new Color(0x2D2D2D));
-        titulo.setBorder(new EmptyBorder(20, 0, 20, 0));
-        add(titulo, BorderLayout.NORTH);
-
+        labelTitulo = new JLabel("Tablero Kanban", SwingConstants.CENTER);
+        labelTitulo.setFont(new Font("SansSerif", Font.BOLD, 24));
+        labelTitulo.setForeground(new Color(0x2D2D2D));
+        
         // ======= PANEL PRINCIPAL (3 COLUMNAS) =======
         JPanel panelColumnas = new JPanel(new GridLayout(1, 3, 15, 0));
         panelColumnas.setBorder(new EmptyBorder(10, 20, 20, 20));
         panelColumnas.setBackground(new Color(0xF5F7FA));
+        
+        labelInfo = new JLabel("Cargando...", SwingConstants.CENTER);
+        labelInfo.setFont(new Font("SansSerif", Font.ITALIC, 13));
+        labelInfo.setForeground(new Color(0x666666));
+        
+        panelSuperior.add(labelTitulo, BorderLayout.CENTER);
+        panelSuperior.add(labelInfo, BorderLayout.SOUTH);
+        add(panelSuperior, BorderLayout.NORTH);
 
         // ======= COLUMNA: PENDIENTE =======
         columnaPendiente = crearColumna("Pendiente", new Color(0xE57373));
@@ -53,10 +64,15 @@ public class KanbanBoardView extends JPanel {
         btnNuevaTarea.setBorderPainted(false);
         btnNuevaTarea.setFocusPainted(false);
         btnNuevaTarea.setPreferredSize(new Dimension(200, 40));
+        btnNuevaTarea.setCursor(new Cursor(Cursor.HAND_CURSOR)); 
 
         panelInferior.add(btnNuevaTarea);
 
         add(panelInferior, BorderLayout.SOUTH);
+    }
+
+    public void actualizarTitulo(String nombreProyecto, String nombreSprint) {
+        labelInfo.setText("Proyecto: " + nombreProyecto + " | Sprint: " + nombreSprint);
     }
 
     // ======= MÉTODO PARA CREAR UNA COLUMNA =======

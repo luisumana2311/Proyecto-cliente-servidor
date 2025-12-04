@@ -1,73 +1,50 @@
 package View;
 
-import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 
 public class SprintView extends JPanel {
 
     public JTable tablaSprints;
-    public JButton btnCrearSprint;
-    public JButton btnAbrirKanban;
-    public JComboBox<String> comboProyectos;
+    public JButton btnNuevo;
+    public JButton btnEliminar;
+    public JComboBox<String> comboProyecto;
+    public DefaultTableModel modeloTabla;
 
     public SprintView() {
+
         setLayout(new BorderLayout());
         setBackground(new Color(0xF5F7FA));
+        setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // ======= PANEL SUPERIOR =======
-        JPanel panelSuperior = new JPanel();
-        panelSuperior.setBackground(Color.WHITE);
-        panelSuperior.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
-        panelSuperior.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JLabel titulo = new JLabel("Gestión de Sprints");
+        titulo.setFont(new Font("SansSerif", Font.BOLD, 26));
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
 
-        JLabel lblTitulo = new JLabel("Sprints del Proyecto");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitulo.setForeground(new Color(0x2D2D2D));
+        add(titulo, BorderLayout.NORTH);
 
-        comboProyectos = new JComboBox<>(new String[]{
-            "Seleccionar proyecto..."
-        });
-        comboProyectos.setFont(new Font("Segoe UI", 14, Font.PLAIN));
-        comboProyectos.setBackground(Color.WHITE);
-        comboProyectos.setBorder(BorderFactory.createLineBorder(new Color(0xD0D7E1)));
+        JPanel panelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        btnCrearSprint = new JButton("Crear Sprint");
-        btnCrearSprint.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnCrearSprint.setBackground(new Color(0x4A90E2));
-        btnCrearSprint.setForeground(Color.WHITE);
-        btnCrearSprint.setBorderPainted(false);
-        btnCrearSprint.setFocusPainted(false);
-        btnCrearSprint.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        comboProyecto = new JComboBox<>();
+        comboProyecto.setPreferredSize(new Dimension(250, 30));
 
-        btnAbrirKanban = new JButton("Abrir Kanban");
-        btnAbrirKanban.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnAbrirKanban.setBackground(new Color(0xF5A623));
-        btnAbrirKanban.setForeground(Color.WHITE);
-        btnAbrirKanban.setBorderPainted(false);
-        btnAbrirKanban.setFocusPainted(false);
-        btnAbrirKanban.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnNuevo = new JButton("Nuevo Sprint");
+        btnEliminar = new JButton("Eliminar");
 
-        panelSuperior.add(lblTitulo);
-        panelSuperior.add(comboProyectos);
-        panelSuperior.add(btnCrearSprint);
-        panelSuperior.add(btnAbrirKanban);
+        panelTop.add(new JLabel("Proyecto:"));
+        panelTop.add(comboProyecto);
+        panelTop.add(btnNuevo);
+        panelTop.add(btnEliminar);
 
-        add(panelSuperior, BorderLayout.NORTH);
+        add(panelTop, BorderLayout.SOUTH);
 
-        // ======= TABLA =======
-        String[] columnas = {"ID Sprint", "Nombre", "Fecha Inicio", "Fecha Fin"};
+        String[] columnas = {"ID", "Nombre", "Inicio", "Fin", "Estado"};
 
-        DefaultTableModel modelo = new DefaultTableModel(columnas, 0);
-        tablaSprints = new JTable(modelo);
-        tablaSprints.setRowHeight(28);
-        tablaSprints.setSelectionBackground(new Color(0x4A90E2));
-        tablaSprints.setGridColor(new Color(0xD0D7E1));
+        modeloTabla = new DefaultTableModel(columnas, 0);
+        tablaSprints = new JTable(modeloTabla);
 
-        JScrollPane scrollTabla = new JScrollPane(tablaSprints);
-        scrollTabla.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
-
-        add(scrollTabla, BorderLayout.CENTER);
+        add(new JScrollPane(tablaSprints), BorderLayout.CENTER);
     }
 }

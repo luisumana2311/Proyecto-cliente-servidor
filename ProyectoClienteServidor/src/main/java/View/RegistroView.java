@@ -10,108 +10,76 @@ public class RegistroView extends JFrame {
     public JTextField campoCorreo;
     public JPasswordField campoPassword;
     public JPasswordField campoPassword2;
+    public JComboBox<String> comboRol;
     public JButton btnRegistrar;
     public JButton btnVolver;
 
     public RegistroView() {
+
         setTitle("Crear Cuenta");
-        setSize(450, 580);
+        setSize(420, 680);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
 
-        // Panel principal
-        JPanel mainPanel = new JPanel();
-        mainPanel.setBackground(new Color(0xF5F7FA));
-        mainPanel.setLayout(new BorderLayout());
-        mainPanel.setBorder(new EmptyBorder(35, 35, 35, 35));
-        add(mainPanel);
+        JPanel main = new JPanel(new BorderLayout());
+        main.setBackground(new Color(0xF5F7FA));
+        main.setBorder(new EmptyBorder(30, 30, 30, 30));
+        add(main);
 
-        // Título
-        JLabel titulo = new JLabel("Crear una Cuenta", SwingConstants.CENTER);
+        JLabel titulo = new JLabel("Crear Cuenta", SwingConstants.CENTER);
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 26));
         titulo.setForeground(new Color(0x2D2D2D));
-        mainPanel.add(titulo, BorderLayout.NORTH);
+        main.add(titulo, BorderLayout.NORTH);
 
-        // Panel de formulario
-        JPanel formPanel = new JPanel();
-        formPanel.setBackground(new Color(0xF5F7FA));
-        formPanel.setLayout(new GridLayout(10, 1, 0, 8));
+        JPanel form = new JPanel(new GridLayout(12, 1, 0, 10));
+        form.setBackground(new Color(0xF5F7FA));
 
-        // Nombre
-        JLabel lblNombre = new JLabel("Nombre:");
-        lblNombre.setForeground(new Color(0x555555));
-        lblNombre.setFont(new Font("Segoe UI", 0, 14));
-
+        JLabel lblNombre = new JLabel("Nombre completo:");
         campoNombre = new JTextField();
-        campoNombre.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0xD0D7E1), 2),
-                BorderFactory.createEmptyBorder(8, 8, 8, 8)
-        ));
 
-        // Correo
         JLabel lblCorreo = new JLabel("Correo electrónico:");
-        lblCorreo.setForeground(new Color(0x555555));
-        lblCorreo.setFont(new Font("Segoe UI", 0, 14));
-
         campoCorreo = new JTextField();
-        campoCorreo.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0xD0D7E1), 2),
-                BorderFactory.createEmptyBorder(8, 8, 8, 8)
-        ));
 
-        // Password 1
-        JLabel lblPassword = new JLabel("Contraseña:");
-        lblPassword.setForeground(new Color(0x555555));
-        lblPassword.setFont(new Font("Segoe UI", 0, 14));
+        JLabel lblRol = new JLabel("Rol en el proyecto:");
+        lblRol.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        comboRol = new JComboBox<>(new String[]{
+            "Developer",
+            "Scrum Master",
+            "Product Owner"
+        });
+        comboRol.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        comboRol.setBackground(Color.WHITE);
 
+        JLabel lblPass = new JLabel("Contraseña:");
         campoPassword = new JPasswordField();
-        campoPassword.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0xD0D7E1), 2),
-                BorderFactory.createEmptyBorder(8, 8, 8, 8)
-        ));
 
-        // Password 2
-        JLabel lblPassword2 = new JLabel("Confirmar contraseña:");
-        lblPassword2.setForeground(new Color(0x555555));
-        lblPassword2.setFont(new Font("Segoe UI", 0, 14));
-
+        JLabel lblPass2 = new JLabel("Confirmar contraseña:");
         campoPassword2 = new JPasswordField();
-        campoPassword2.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0xD0D7E1), 2),
-                BorderFactory.createEmptyBorder(8, 8, 8, 8)
-        ));
 
-        // Botón registrar
         btnRegistrar = new JButton("Registrarse");
         btnRegistrar.setBackground(new Color(0x4A90E2));
         btnRegistrar.setForeground(Color.WHITE);
-        btnRegistrar.setFocusPainted(false);
         btnRegistrar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnRegistrar.setBorderPainted(false);
-        btnRegistrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Botón volver
         btnVolver = new JButton("Volver");
         btnVolver.setBackground(new Color(0xE94E77));
         btnVolver.setForeground(Color.WHITE);
-        btnVolver.setFocusPainted(false);
         btnVolver.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnVolver.setBorderPainted(false);
-        btnVolver.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Agregar componentes al panel del formulario
-        formPanel.add(lblNombre);
-        formPanel.add(campoNombre);
-        formPanel.add(lblCorreo);
-        formPanel.add(campoCorreo);
-        formPanel.add(lblPassword);
-        formPanel.add(campoPassword);
-        formPanel.add(lblPassword2);
-        formPanel.add(campoPassword2);
-        formPanel.add(btnRegistrar);
-        formPanel.add(btnVolver);
+        form.add(lblNombre);
+        form.add(campoNombre);
+        form.add(lblCorreo);
+        form.add(campoCorreo);
+        form.add(lblRol);
+        form.add(comboRol);
+        form.add(lblPass);
+        form.add(campoPassword);
+        form.add(lblPass2);
+        form.add(campoPassword2);
+        form.add(btnRegistrar);
+        form.add(btnVolver);
 
-        mainPanel.add(formPanel, BorderLayout.CENTER);
+        main.add(form, BorderLayout.CENTER);
     }
 }

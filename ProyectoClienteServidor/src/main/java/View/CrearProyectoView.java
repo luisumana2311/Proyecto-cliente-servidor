@@ -33,23 +33,25 @@ public class CrearProyectoView extends JFrame {
         // Panel de formulario
         JPanel formPanel = new JPanel();
         formPanel.setBackground(new Color(0xF5F7FA));
-        formPanel.setLayout(new GridLayout(4, 1, 0, 10));
+        formPanel.setLayout(new GridLayout(5, 1, 0, 10));
 
         JLabel lblNombre = new JLabel("Nombre del proyecto:");
-        lblNombre.setFont(new Font("Segoe UI", 14, Font.PLAIN));
+        lblNombre.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblNombre.setForeground(new Color(0x555555));
 
         campoNombre = new JTextField();
+        campoNombre.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         campoNombre.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(0xD0D7E1), 2),
                 BorderFactory.createEmptyBorder(8, 8, 8, 8)
         ));
 
         JLabel lblDescripcion = new JLabel("Descripción:");
-        lblDescripcion.setFont(new Font("Segoe UI", 14, Font.PLAIN));
+        lblDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblDescripcion.setForeground(new Color(0x555555));
 
         campoDescripcion = new JTextArea(5, 20);
+        campoDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         campoDescripcion.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(0xD0D7E1), 2),
                 BorderFactory.createEmptyBorder(8, 8, 8, 8)
@@ -64,19 +66,13 @@ public class CrearProyectoView extends JFrame {
         formPanel.add(campoNombre);
         formPanel.add(lblDescripcion);
         formPanel.add(scrollDescripcion);
+        formPanel.add(new JLabel(""));
 
         mainPanel.add(formPanel, BorderLayout.CENTER);
 
         // Panel de botones
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(new Color(0xF5F7FA));
-
-        btnGuardar = new JButton("Guardar");
-        btnGuardar.setBackground(new Color(0x4A90E2));
-        btnGuardar.setForeground(Color.WHITE);
-        btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnGuardar.setFocusPainted(false);
-        btnGuardar.setBorderPainted(false);
 
         btnCancelar = new JButton("Cancelar");
         btnCancelar.setBackground(new Color(0xE94E77));
@@ -85,8 +81,15 @@ public class CrearProyectoView extends JFrame {
         btnCancelar.setFocusPainted(false);
         btnCancelar.setBorderPainted(false);
 
-        buttonPanel.add(btnGuardar);
+        btnGuardar = new JButton("Guardar");
+        btnGuardar.setBackground(new Color(0x4A90E2));
+        btnGuardar.setForeground(Color.WHITE);
+        btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnGuardar.setFocusPainted(false);
+        btnGuardar.setBorderPainted(false);
+
         buttonPanel.add(btnCancelar);
+        buttonPanel.add(btnGuardar);
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
