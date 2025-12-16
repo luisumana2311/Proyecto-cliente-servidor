@@ -33,6 +33,7 @@ public class SprintController {
                 Logger.getLogger(SprintController.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
+        vista.comboProyecto.addActionListener(e -> cargarSprints());
     }
 
     private void cargarProyectos() {
@@ -47,6 +48,9 @@ public class SprintController {
             for (Proyecto p : lista) {
                 vista.comboProyecto.addItem(p.getIdProyecto() + " - " + p.getNombre());
             }
+            if (vista.comboProyecto.getItemCount() > 0) {
+                vista.comboProyecto.setSelectedIndex(0);
+            }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(vista, "Error al cargar proyectos: " + e.getMessage());
             e.printStackTrace();
@@ -54,17 +58,27 @@ public class SprintController {
     }
 
     public void cargarSprints() {
-        List<Sprint> lista = dao.listar(usuario.getIdUsuario());
         vista.modeloTabla.setRowCount(0);
-
-        for (Sprint s : lista) {
-            vista.modeloTabla.addRow(new Object[]{
-                s.getIdSprint(),
-                s.getNombre(),
-                s.getFechaInicio(),
-                s.getFechaFin(),
-                "Activo"
-            });
+        if (vista.comboProyecto.getItemCount() == 0 || vista.comboProyecto.getSelectedItem() == null || vista.comboProyecto.getSelectedItem().toString().contains("No hay proyectos")) {
+            return;
+        }
+        try {
+            int idProyectoSelect = obtenerIdProyect();
+            if (idProyectoSelect == -1) {
+                return;
+            }
+            List<Sprint> sprints = dao.findByProyecto(idProyectoSelect);
+            for (Sprint s : sprints) {
+                vista.modeloTabla.addRow(new Object[]{
+                    s.getIdSprint(),
+                    s.getNombre(),
+                    s.getFechaInicio(),
+                    s.getFechaFin(),
+                    "Activo"
+                });
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(vista, "Error al cargar sprints: " + ex.getMessage());
         }
     }
 

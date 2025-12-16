@@ -5,11 +5,14 @@ DAO\UsuarioDAO.class
 Controller\CrearSprintController.class
 Model\Proyecto.class
 Controller\DashboardController.class
+DAO\HistorialDAO.class
 View\ChatView.class
 View\CrearProyectoView.class
+Controller\HistorialController.class
 Server\ClientHandler.class
 View\ProyectosView.class
 View\CrearSprintView.class
+Client\Notificacion.class
 Controller\AuthController.class
 View\LoginView.class
 Controller\CrearProyectoController.class
@@ -24,7 +27,10 @@ View\KanbanBoardView.class
 Controller\KanbanController$1.class
 Model\Tarea.class
 Controller\KanbanController.class
+Model\Mensaje.class
+Controller\ChatController.class
 Model\Usuario.class
+DAO\MensajeDAO.class
 View\CrearTareaView.class
 Controller\RegistroController.class
 DAO\ProyectoDAO.class
@@ -32,6 +38,8 @@ Controller\SprintController.class
 Server\ServerMain.class
 Util\DBUtil.class
 Client\ClientConnector.class
+Controller\KanbanController$3.class
 DAO\TareaDAO.class
 Main\Main.class
 View\HistorialView.class
+Model\HistorialActividad.class

@@ -22,6 +22,7 @@ public class SprintView extends JPanel {
         JLabel titulo = new JLabel("Gestión de Sprints");
         titulo.setFont(new Font("SansSerif", Font.BOLD, 26));
         titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        titulo.setBorder(new EmptyBorder(10,0,10,0));
 
         add(titulo, BorderLayout.NORTH);
 

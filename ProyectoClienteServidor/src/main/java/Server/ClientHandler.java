@@ -2,6 +2,7 @@ package Server;
 
 import Client.Request;
 import Client.Response;
+import Client.Notificacion;
 import DAO.*;
 import Model.*;
 import Util.BCryptUtil;
@@ -10,6 +11,8 @@ import java.net.Socket;
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  *
@@ -22,6 +25,8 @@ public class ClientHandler implements Runnable {
     private ProyectoDAO proyectoDAO = new ProyectoDAO();
     private SprintDAO sprintDAO = new SprintDAO();
     private TareaDAO tareaDAO = new TareaDAO();
+    private MensajeDAO mensajeDAO = new MensajeDAO();
+    private CopyOnWriteArrayList<ClientHandler> clientesConectados = new CopyOnWriteArrayList<>();
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -30,6 +35,7 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream()); ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
+            clientesConectados.add(this);
             System.out.println("Cliente conectado: " + socket.getRemoteSocketAddress());
             Object obj;
             while ((obj = in.readObject()) != null) {
@@ -48,6 +54,7 @@ public class ClientHandler implements Runnable {
             System.err.println("Error en ClientHandler: " + e.getMessage());
             e.printStackTrace();
         } finally {
+            clientesConectados.remove(this);
             try {
                 socket.close();
             } catch (Exception ex) {
@@ -83,6 +90,10 @@ public class ClientHandler implements Runnable {
                     return handleListarTareas(p);
                 case "actualizar_estado_tarea":
                     return handleActualizarEstadoTarea(p);
+                case "enviar_mensaje":
+                    return handleEnviarMensaje(p);
+                case "listar_mensajes":
+                    return handleListarMensajes(p);
                 default:
                     return new Response(false, "Acción no reconocida: " + action);
             }
@@ -314,16 +325,80 @@ public class ClientHandler implements Runnable {
         try {
             Integer idTarea = (Integer) p.get("idTarea");
             Integer nuevoEstado = (Integer) p.get("nuevoEstado");
+            Integer idProyecto = (Integer) p.get("idProyecto");
+            Integer idSprint = (Integer) p.get("idSprint");
 
             if (idTarea == null || nuevoEstado == null) {
                 return new Response(false, "Datos incompletos");
             }
 
             if (tareaDAO.updateEstado(idTarea, nuevoEstado)) {
+                Notificacion noti = new Notificacion("Tarea_Actualizada", idProyecto != null ? idProyecto : 0, idSprint != null ? idSprint : 0);
+                noti.setIdTarea(idTarea);
+                notificarClientes(noti);
                 return new Response(true, "Estado actualizado");
             } else {
                 return new Response(false, "Error al actualizar estado");
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return new Response(false, "Error: " + ex.getMessage());
+        }
+    }
+
+    public void enviarNoti(Notificacion noti) {
+        try {
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(noti);
+            out.flush();
+        } catch (Exception ex) {
+            System.err.println("Error enviando notificacion: " + ex.getMessage());
+        }
+    }
+
+    public void notificarClientes(Notificacion noti) {
+        for (ClientHandler cliente : clientesConectados) {
+            try {
+                cliente.enviarNoti(noti);
+            } catch (Exception ex) {
+                System.err.println("Error notificando clientes: " + ex.getMessage());
+            }
+        }
+    }
+
+    private Response handleEnviarMensaje(Map<String, Object> p) {
+        try {
+            Integer idProyecto = (Integer) p.get("idProyecto");
+            Integer idUsuario = (Integer) p.get("idUsuario");
+            String mensaje = (String) p.get("mensaje");
+            
+            if (idProyecto == null || idUsuario == null || mensaje == null || mensaje.isEmpty()) {
+                return new Response(false, "Datos incompletos");
+            }
+            Mensaje m = new Mensaje(idProyecto, idUsuario, mensaje);
+            if (mensajeDAO.create(m)) {
+                Response r = new Response(true, "Mensaje enviado");
+                r.setData(m);
+                return r;
+            } else {
+                return new Response(false, "Error al enviar mensaje");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return new Response(false, "Error: " + ex.getMessage());
+        }
+    }
+
+    private Response handleListarMensajes(Map<String, Object> p) {
+        try {
+            Integer idProyecto = (Integer) p.get("idProyecto");
+            if (idProyecto == null) {
+                return new Response(false, "Id de proyecto requerido");
+            }
+            List<Mensaje> mensajes = mensajeDAO.findByProyecto(idProyecto);
+            Response r = new Response(true, "Mensajes obtenidos");
+            r.setData(mensajes);
+            return r;
         } catch (Exception ex) {
             ex.printStackTrace();
             return new Response(false, "Error: " + ex.getMessage());

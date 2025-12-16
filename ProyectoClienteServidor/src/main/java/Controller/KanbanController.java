@@ -4,9 +4,12 @@ import View.KanbanBoardView;
 import View.CrearTareaView;
 import Model.Usuario;
 import Model.Tarea;
+import DAO.UsuarioDAO;
 import DAO.TareaDAO;
 import DAO.SprintDAO;
 import DAO.ProyectoDAO;
+import DAO.HistorialDAO;
+import Model.HistorialActividad;
 import Model.Sprint;
 import Model.Proyecto;
 import javax.swing.*;
@@ -14,6 +17,7 @@ import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.MouseEvent;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -27,8 +31,12 @@ public class KanbanController {
     private TareaDAO tareaDAO;
     private SprintDAO sprintDAO;
     private ProyectoDAO proyectoDAO;
+    private UsuarioDAO usuarioDAO;
+    private HistorialDAO historialDAO;
     private Sprint sprintActual;
     private Proyecto proyectoActual;
+    private Timer actualizarAuto;
+    private Timestamp ultimaActualizacion = null;
 
     public KanbanController(KanbanBoardView vista, Usuario usuario) {
         this.vista = vista;
@@ -36,8 +44,12 @@ public class KanbanController {
         this.tareaDAO = new TareaDAO();
         this.sprintDAO = new SprintDAO();
         this.proyectoDAO = new ProyectoDAO();
+        this.usuarioDAO = new UsuarioDAO();
+        this.historialDAO = new HistorialDAO();
         iniciarEventos();
         cargarDatos();
+        configurarDrops();
+        initActulizacionAuto();
     }
 
     private void iniciarEventos() {
@@ -86,6 +98,7 @@ public class KanbanController {
                         break;
                 }
             }
+            ultimaActualizacion = tareaDAO.ultimaModi(sprintActual.getIdSprint());
             vista.revalidate();
             vista.repaint();
         } catch (Exception e) {
@@ -118,6 +131,20 @@ public class KanbanController {
         topPanel.add(lblNombre, BorderLayout.WEST);
         topPanel.add(lblPrioridad, BorderLayout.EAST);
 
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        bottomPanel.setBackground(Color.WHITE);
+        try {
+            Usuario responsable = usuarioDAO.findAll().stream().filter(u -> u.getIdUsuario() == t.getIdUsuario()).findFirst().orElse(null);
+            if (responsable != null) {
+                JLabel lblResponsable = new JLabel(responsable.getNombre());
+                lblResponsable.setFont(new Font("SansSerif", Font.ITALIC, 10));
+                lblResponsable.setForeground(new Color(0x666666));
+                bottomPanel.add(lblResponsable);
+            }
+        } catch (Exception ex) {
+            System.err.println("Error cargando responsable: " + ex.getMessage());
+        }
+
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(Color.WHITE);
@@ -129,6 +156,7 @@ public class KanbanController {
             lblDesc.setFont(new Font("SansSerif", Font.PLAIN, 11));
             lblDesc.setForeground(Color.GRAY);
             centerPanel.add(lblDesc);
+            centerPanel.add(bottomPanel);
         }
         tarjeta.add(topPanel, BorderLayout.NORTH);
         tarjeta.add(centerPanel, BorderLayout.CENTER);
@@ -230,6 +258,19 @@ public class KanbanController {
     private void cambiarEstado(Tarea t, int nuevoEstado) {
         try {
             if (tareaDAO.updateEstado(t.getIdTarea(), nuevoEstado)) {
+                String estadoN = "";
+                switch (nuevoEstado) {
+                    case 1:
+                        estadoN = "Pendiente";
+                        break;
+                    case 2:
+                        estadoN = "En Progreso";
+                        break;
+                    case 3:
+                        estadoN = "Completado";
+                        break;
+                }
+                registarHistorial(t.getIdTarea(), "Cambio estado a " + estadoN);
                 cargarTareas();
             } else {
                 JOptionPane.showMessageDialog(vista, "Error al actualizar estado");
@@ -248,6 +289,7 @@ public class KanbanController {
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 if (tareaDAO.delete(t.getIdTarea())) {
+                    registarHistorial(t.getIdTarea(), "Elimino la tarea");
                     JOptionPane.showMessageDialog(vista, "Tarea eliminada");
                     cargarTareas();
                 } else {
@@ -285,11 +327,31 @@ public class KanbanController {
     }
 
     private void crearNuevaTarea() {
-        if (sprintActual == null) {
-            JOptionPane.showMessageDialog(vista, "No hay sprint disponible");
-            return;
-        }
         CrearTareaView crearVista = new CrearTareaView();
+        try {
+            List<Proyecto> proyectos = proyectoDAO.findByUsuario(usuario.getIdUsuario());
+            crearVista.comboProyecto.removeAllItems();
+            for (Proyecto p : proyectos) {
+                crearVista.comboProyecto.addItem(p.getIdProyecto() + " - " + p.getNombre());
+            }
+            crearVista.comboProyecto.addActionListener(e -> {
+                cargarSprintsForm(crearVista);
+            });
+            if (crearVista.comboProyecto.getItemCount() > 0) {
+                cargarSprintsForm(crearVista);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(crearVista, "Error al cargar proyectos: " + e.getMessage());
+        }
+        try {
+            List<Model.Usuario> usuarios = usuarioDAO.findAll();
+            crearVista.comboResponsable.removeAllItems();
+            for (Model.Usuario u : usuarios) {
+                crearVista.comboResponsable.addItem(u.getIdUsuario() + " - " + u.getNombre());
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(crearVista, "Error al cargar usuarios: " + e.getMessage());
+        }
         crearVista.btnGuardar.addActionListener(e -> {
             String nombre = crearVista.campoTitulo.getText().trim();
             String descripcion = crearVista.campoDescripcion.getText().trim();
@@ -298,19 +360,46 @@ public class KanbanController {
                 JOptionPane.showMessageDialog(crearVista, "El nombre es obligatorio");
                 return;
             }
+            int idProyectoSeleccionado = -1;
+            int idSprintSeleccionado = -1;
+            try {
+                String proyectoStr = (String) crearVista.comboProyecto.getSelectedItem();
+                if (proyectoStr != null) {
+                    idProyectoSeleccionado = Integer.parseInt(proyectoStr.split(" - ")[0]);
+                }
+                String sprintStr = (String) crearVista.comboSprint.getSelectedItem();
+                if (sprintStr != null) {
+                    idSprintSeleccionado = Integer.parseInt(sprintStr.split(" - ")[0]);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(crearVista, "Error: Selecciona un proyecto y sprint válidos");
+                return;
+            }
+            if (idProyectoSeleccionado == -1 || idSprintSeleccionado == -1) {
+                JOptionPane.showMessageDialog(crearVista, "Debes seleccionar un proyecto y un sprint");
+                return;
+            }
+            int idResponsable = usuario.getIdUsuario();
+            try {
+                String seleccion = (String) crearVista.comboResponsable.getSelectedItem();
+                if (seleccion != null) {
+                    idResponsable = Integer.parseInt(seleccion.split(" - ")[0]);
+                }
+            } catch (Exception ex) {
+                System.err.println("Error parseando responsable: " + ex.getMessage());
+            }
             try {
                 Tarea t = new Tarea();
-                t.setIdProyecto(sprintActual.getIdProyecto());
-                t.setIdSprint(sprintActual.getIdSprint());
-                t.setIdUsuario(usuario.getIdUsuario());
+                t.setIdProyecto(idProyectoSeleccionado);
+                t.setIdSprint(idSprintSeleccionado);
+                t.setIdUsuario(idResponsable);
                 t.setNombre(nombre);
                 t.setDescripcion(descripcion);
                 t.setPrioridad(prioridad);
                 t.setIdEstadoTareas(1);
                 if (tareaDAO.create(t)) {
-                    JOptionPane.showMessageDialog(crearVista,
-                            "Tarea creada en:\nProyecto: " + proyectoActual.getNombre()
-                            + "\nSprint: " + sprintActual.getNombre());
+                    registarHistorial(t.getIdTarea(), "Creó la tarea");
+                    JOptionPane.showMessageDialog(crearVista, "Tarea creada exitosamente");
                     crearVista.dispose();
                     cargarTareas();
                 } else {
@@ -321,7 +410,103 @@ public class KanbanController {
                 ex.printStackTrace();
             }
         });
+
         crearVista.btnCancelar.addActionListener(e -> crearVista.dispose());
         crearVista.setVisible(true);
+    }
+
+    private void configurarDrops() {
+        configDropColum(vista.columnaPendiente, 1);
+        configDropColum(vista.columnaProgreso, 2);
+        configDropColum(vista.columnaCompletado, 3);
+    }
+
+    private void configDropColum(JPanel columna, int nuevoEstado) {
+        Component scroll = columna.getComponent(1);
+        if (scroll instanceof JScrollPane) {
+            JPanel contenido = (JPanel) ((JScrollPane) scroll).getViewport().getView();
+            new DropTarget(contenido, new DropTargetAdapter() {
+                @Override
+                public void drop(DropTargetDropEvent dtde) {
+                    try {
+                        dtde.acceptDrop(DnDConstants.ACTION_MOVE);
+                        Transferable trans = dtde.getTransferable();
+                        String idTareaS = (String) trans.getTransferData(DataFlavor.stringFlavor);
+                        int idTarea = Integer.parseInt(idTareaS);
+                        if (tareaDAO.updateEstado(idTarea, nuevoEstado)) {
+                            cargarTareas();
+                            dtde.dropComplete(true);
+                        } else {
+                            dtde.dropComplete(true);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        dtde.dropComplete(false);
+                    }
+                }
+            });
+        }
+    }
+
+    private void initActulizacionAuto() {
+        actualizarAuto = new Timer(3000, e -> actualizaciones());
+        actualizarAuto.start();
+    }
+
+    private void actualizaciones() {
+        if (sprintActual == null) {
+            return;
+        }
+        try {
+            Timestamp ultimaModiS = tareaDAO.ultimaModi(sprintActual.getIdSprint());
+            if (ultimaModiS != null && (ultimaActualizacion == null || ultimaModiS.after(ultimaActualizacion))) {
+                System.out.println("Cambios detectados, las tareas se recargaran");
+                SwingUtilities.invokeLater(() -> {
+                    try {
+                        cargarTareas();
+                    } catch (Exception ex) {
+                        System.err.println("Error actualizando tareas: " + ex.getMessage());
+                    }
+                });
+            }
+        } catch (Exception ex) {
+            System.err.println("Error verificando actualizaciones: " + ex.getMessage());
+        }
+    }
+
+    public void detener() {
+        if (actualizarAuto != null) {
+            actualizarAuto.stop();
+        }
+    }
+
+    private void registarHistorial(int idTarea, String accion) {
+        try {
+            HistorialActividad h = new HistorialActividad(usuario.getIdUsuario(), idTarea, accion);
+            historialDAO.create(h);
+        } catch (Exception ex) {
+            System.err.println("Error al registrar en historial: " + ex.getMessage());
+        }
+    }
+
+    private void cargarSprintsForm(CrearTareaView form) {
+        try {
+            String proyectoStr = (String) form.comboProyecto.getSelectedItem();
+            if (proyectoStr == null) {
+                return;
+            }
+            int idProyecto = Integer.parseInt(proyectoStr.split(" - ")[0]);
+            List<Sprint> sprints = sprintDAO.findByProyecto(idProyecto);
+            form.comboSprint.removeAllItems();
+            if (sprints.isEmpty()) {
+                form.comboSprint.addItem("No hay sprints en este proyecto");
+            } else {
+                for (Sprint s : sprints) {
+                    form.comboSprint.addItem(s.getIdSprint() + " - " + s.getNombre());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error cargando sprints: " + e.getMessage());
+        }
     }
 }

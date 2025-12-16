@@ -11,11 +11,14 @@ public class CrearTareaView extends JFrame {
     public JTextArea campoDescripcion;
     public JButton btnGuardar;
     public JButton btnCancelar;
+    public JComboBox<String> comboResponsable;
+    public JComboBox<String> comboProyecto;
+    public JComboBox<String> comboSprint;
 
     public CrearTareaView() {
 
         setTitle("Crear Tarea");
-        setSize(430, 380);
+        setSize(480, 700);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -35,7 +38,12 @@ public class CrearTareaView extends JFrame {
         // Formulario
         JPanel formPanel = new JPanel();
         formPanel.setBackground(new Color(0xF5F7FA));
-        formPanel.setLayout(new GridLayout(6, 1, 0, 10));
+        formPanel.setLayout(new BorderLayout(0, 10));
+
+        JPanel camposPanel = new JPanel();
+        camposPanel.setBackground(new Color(0xF5F7FA));
+        camposPanel.setLayout(new GridLayout(10, 1, 0, 12));
+        camposPanel.setPreferredSize(new Dimension(0, 420));
 
         // Campo título
         JLabel lblTitulo = new JLabel("Título de la tarea:");
@@ -48,6 +56,24 @@ public class CrearTareaView extends JFrame {
                 BorderFactory.createEmptyBorder(8, 8, 8, 8)
         ));
 
+        // Proyecto
+        JLabel lblProyecto = new JLabel("Proyecto:");
+        lblProyecto.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lblProyecto.setForeground(new Color(0x555555));
+
+        comboProyecto = new JComboBox<>();
+        comboProyecto.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        comboProyecto.setBackground(Color.WHITE);
+
+        // Sprint
+        JLabel lblSprint = new JLabel("Sprint:");
+        lblSprint.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lblSprint.setForeground(new Color(0x555555));
+
+        comboSprint = new JComboBox<>();
+        comboSprint.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        comboSprint.setBackground(Color.WHITE);
+
         // Prioridad
         JLabel lblPrioridad = new JLabel("Prioridad:");
         lblPrioridad.setFont(new Font("SansSerif", Font.PLAIN, 14));
@@ -58,6 +84,28 @@ public class CrearTareaView extends JFrame {
         });
         comboPrioridad.setFont(new Font("SansSerif", Font.PLAIN, 14));
         comboPrioridad.setBackground(Color.WHITE);
+
+        JLabel lblResponsable = new JLabel("Responsable:");
+        lblResponsable.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lblResponsable.setForeground(new Color(0x555555));
+        comboResponsable = new JComboBox<>();
+        comboResponsable.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        comboResponsable.setBackground(Color.WHITE);
+
+        camposPanel.add(lblTitulo);
+        camposPanel.add(campoTitulo);
+        camposPanel.add(lblPrioridad);
+        camposPanel.add(comboPrioridad);
+        camposPanel.add(lblProyecto);
+        camposPanel.add(comboProyecto);
+        camposPanel.add(lblSprint);
+        camposPanel.add(comboSprint);
+        camposPanel.add(lblResponsable);
+        camposPanel.add(comboResponsable);
+
+        JPanel descripcionPanel = new JPanel();
+        descripcionPanel.setBackground(new Color(0xF5F7FA));
+        descripcionPanel.setLayout(new BorderLayout(0, 5));
 
         // Descripción
         JLabel lblDescripcion = new JLabel("Descripción:");
@@ -74,14 +122,13 @@ public class CrearTareaView extends JFrame {
 
         JScrollPane scrollDescripcion = new JScrollPane(campoDescripcion);
         scrollDescripcion.setBorder(BorderFactory.createEmptyBorder());
+        scrollDescripcion.setPreferredSize(new Dimension(0, 120));
 
-        // Agregar al formulario
-        formPanel.add(lblTitulo);
-        formPanel.add(campoTitulo);
-        formPanel.add(lblPrioridad);
-        formPanel.add(comboPrioridad);
-        formPanel.add(lblDescripcion);
-        formPanel.add(scrollDescripcion);
+        descripcionPanel.add(lblDescripcion, BorderLayout.NORTH);
+        descripcionPanel.add(scrollDescripcion, BorderLayout.CENTER);
+
+        formPanel.add(camposPanel, BorderLayout.NORTH);
+        formPanel.add(descripcionPanel, BorderLayout.CENTER);
 
         mainPanel.add(formPanel, BorderLayout.CENTER);
 

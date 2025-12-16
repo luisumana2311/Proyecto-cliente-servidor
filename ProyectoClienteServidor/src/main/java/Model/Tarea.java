@@ -20,6 +20,7 @@ public class Tarea implements Serializable {
     private String prioridad;
     private Timestamp fechaCreacion;
     private Date fechaVencimiento;
+    private Timestamp fechaModificacion;
 
     public Tarea() {
     }
@@ -102,5 +103,13 @@ public class Tarea implements Serializable {
 
     public void setFechaVencimiento(Date fechaVencimiento) {
         this.fechaVencimiento = fechaVencimiento;
+    }
+
+    public Timestamp getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Timestamp fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
     }
 }

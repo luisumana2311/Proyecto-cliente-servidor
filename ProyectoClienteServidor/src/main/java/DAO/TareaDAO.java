@@ -54,6 +54,7 @@ public class TareaDAO {
                     t.setDescripcion(rs.getString("Descripcion"));
                     t.setPrioridad(rs.getString("Prioridad"));
                     t.setFechaCreacion(rs.getTimestamp("Fecha_Creacion"));
+                    t.setFechaModificacion(rs.getTimestamp("Fecha_Modificacion"));
                     lista.add(t);
                 }
             }
@@ -141,5 +142,18 @@ public class TareaDAO {
             }
         }
         return lista;
+    }
+
+    public Timestamp ultimaModi(int idSprint) throws Exception {
+        String sql = "SELECT MAX(Fecha_Modificacion) as ultima FROM Tareas WHERE Id_Sprint = ?";
+        try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, idSprint);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getTimestamp("ultima");
+                }
+                return null;
+            }
+        }
     }
 }

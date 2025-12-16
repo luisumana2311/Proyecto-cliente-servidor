@@ -22,24 +22,14 @@ public class ProyectoController {
         cargarTabla();
         vista.btnNuevo.addActionListener(e -> nuevoProyecto());
         vista.btnEliminar.addActionListener(e -> eliminarProyecto());
+        vista.comboFiltro.addActionListener(e -> aplicarFiltro());
     }
 
     // ============================
     // CARGAR TABLA DE PROYECTOS
     // ============================
     private void cargarTabla() {
-        List<Proyecto> lista = dao.listar(usuario.getIdUsuario());
-
-        vista.modeloTabla.setRowCount(0);
-
-        for (Proyecto p : lista) {
-            vista.modeloTabla.addRow(new Object[]{
-                p.getIdProyecto(),
-                p.getNombre(),
-                p.getDescripcion(),
-                p.getEstado()
-            });
-        }
+        aplicarFiltro();
     }
 
     // ============================
@@ -78,6 +68,37 @@ public class ProyectoController {
                 cargarTabla();
             } else {
                 JOptionPane.showMessageDialog(vista, "Error al eliminar proyecto");
+            }
+        }
+    }
+
+    private void aplicarFiltro() {
+        String filtroSelect = (String) vista.comboFiltro.getSelectedItem();
+        List<Proyecto> lista = dao.listar(usuario.getIdUsuario());
+        vista.modeloTabla.setRowCount(0);
+        for (Proyecto p : lista) {
+            boolean includ = false;
+            switch (filtroSelect) {
+                case "Todos":
+                    includ = true;
+                    break;
+                case "Activos":
+                    includ = "Activo".equalsIgnoreCase(p.getEstado());
+                    break;
+                case "Completados":
+                    includ = "Completado".equalsIgnoreCase(p.getEstado());
+                    break;
+                case "Archivados":
+                    includ = "Archivado".equalsIgnoreCase(p.getEstado());
+                    break;
+            }
+            if (includ) {
+                vista.modeloTabla.addRow(new Object[]{
+                    p.getIdProyecto(),
+                    p.getNombre(),
+                    p.getDescripcion(),
+                    p.getEstado()
+                });
             }
         }
     }

@@ -1,7 +1,9 @@
 package View;
 
+import Controller.ChatController;
 import Controller.ProyectoController;
 import Controller.SprintController;
+import Controller.HistorialController;
 import Model.Usuario;
 import Controller.KanbanController;
 import java.awt.*;
@@ -107,15 +109,23 @@ public class DashboardView extends JFrame {
         // KANBAN
         btnKanban.addActionListener(e -> {
             KanbanBoardView vista = new KanbanBoardView();
-            new KanbanController(vista, usuario); 
+            new KanbanController(vista, usuario);
             mostrarVista(vista);
         });
 
         // CHAT
-        btnChat.addActionListener(e -> mostrarVista(new ChatView()));
+        btnChat.addActionListener(e -> {
+            ChatView vista = new ChatView();
+            new ChatController(vista, usuario);
+            mostrarVista(vista);
+        });
 
         // HISTORIAL
-        btnHistorial.addActionListener(e -> mostrarVista(new HistorialView()));
+        btnHistorial.addActionListener(e -> {
+            HistorialView vista = new HistorialView();
+            new HistorialController(vista, usuario);
+            mostrarVista(vista);
+        });
 
         // CERRAR SESIÓN
         btnCerrar.addActionListener(e -> {
