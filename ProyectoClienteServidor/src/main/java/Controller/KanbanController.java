@@ -59,19 +59,28 @@ public class KanbanController {
     private void cargarDatos() {
         try {
             List<Proyecto> proyectos = proyectoDAO.findByUsuario(usuario.getIdUsuario());
+            vista.comboProyecto.removeAllItems();
             if (proyectos.isEmpty()) {
                 JOptionPane.showMessageDialog(vista, "No hay proyectos creados. Crea un proyecto primero.");
                 return;
             }
-            proyectoActual = proyectos.get(0);
-            List<Sprint> sprints = sprintDAO.findByProyecto(proyectoActual.getIdProyecto());
-            if (sprints.isEmpty()) {
-                JOptionPane.showMessageDialog(vista, "No hay sprints creados en el proyecto" + proyectoActual.getNombre() + ".");
-                return;
+            for (Proyecto p : proyectos) {
+                vista.comboProyecto.addItem(p.getIdProyecto() + " - " + p.getNombre());
             }
-            sprintActual = sprints.get(0);
-            vista.actualizarTitulo(proyectoActual.getNombre(), sprintActual.getNombre());
-            cargarTareas();
+            vista.comboProyecto.addActionListener(e -> {
+                if (vista.comboProyecto.getSelectedItem() != null) {
+                    cargarSprintsProyecto();
+                }
+            });
+            vista.comboSprint.addActionListener(e -> {
+                if (vista.comboSprint.getSelectedItem() != null) {
+                    cargarTareasSprint();
+                }
+            });
+            if (vista.comboProyecto.getItemCount() > 0) {
+                vista.comboProyecto.setSelectedIndex(0);
+                cargarSprintsProyecto();
+            }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(vista, "Error al cargar datos: " + e.getMessage());
         }
@@ -461,13 +470,13 @@ public class KanbanController {
             Timestamp ultimaModiS = tareaDAO.ultimaModi(sprintActual.getIdSprint());
             if (ultimaModiS != null && (ultimaActualizacion == null || ultimaModiS.after(ultimaActualizacion))) {
                 System.out.println("Cambios detectados, las tareas se recargaran");
-                SwingUtilities.invokeLater(() -> {
-                    try {
+                try {
+                    if (sprintActual != null) {
                         cargarTareas();
-                    } catch (Exception ex) {
-                        System.err.println("Error actualizando tareas: " + ex.getMessage());
                     }
-                });
+                } catch (Exception ex) {
+                    System.err.println("Error actualizando tareas: " + ex.getMessage());
+                }
             }
         } catch (Exception ex) {
             System.err.println("Error verificando actualizaciones: " + ex.getMessage());
@@ -507,6 +516,56 @@ public class KanbanController {
             }
         } catch (Exception e) {
             System.err.println("Error cargando sprints: " + e.getMessage());
+        }
+    }
+
+    private void cargarSprintsProyecto() {
+        try {
+            String proyectoS = (String) vista.comboProyecto.getSelectedItem();
+            if (proyectoS == null) {
+                return;
+            }
+            int idProyecto = Integer.parseInt(proyectoS.split(" - ")[0]);
+            proyectoActual = proyectoDAO.findByUsuario(usuario.getIdUsuario()).stream().filter(p -> p.getIdProyecto() == idProyecto).findFirst().orElse(null);
+            if (proyectoActual == null) {
+                return;
+            }
+            List<Sprint> sprints = sprintDAO.findByProyecto(idProyecto);
+            vista.comboSprint.removeAllItems();
+            if (sprints.isEmpty()) {
+                JOptionPane.showMessageDialog(vista, "No hay sprints en el proyecto '" + proyectoActual.getNombre());
+                limpiarColumnas();
+                vista.actualizarTitulo(proyectoActual.getNombre(), "Sin Sprints");
+                return;
+            }
+            for (Sprint s : sprints) {
+                vista.comboSprint.addItem(s.getIdSprint() + " - " + s.getNombre());
+            }
+            if (vista.comboSprint.getItemCount() > 0) {
+                vista.comboSprint.setSelectedIndex(0);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(vista, "Error al cargar sprints:" + ex.getMessage());
+            ex.printStackTrace();
+
+        }
+    }
+
+    private void cargarTareasSprint() {
+        try {
+            String sprintS = (String) vista.comboSprint.getSelectedItem();
+            if (sprintS == null || proyectoActual == null) {
+                return;
+            }
+            int idSprint = Integer.parseInt(sprintS.split(" - ")[0]);
+            sprintActual = sprintDAO.findByProyecto(proyectoActual.getIdProyecto()).stream().filter(s -> s.getIdSprint() == idSprint).findFirst().orElse(null);
+            if (sprintActual != null) {
+                vista.actualizarTitulo(proyectoActual.getNombre(), sprintActual.getNombre());
+                cargarTareas();
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(vista, "Error al cargar tareas: " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 }

@@ -10,34 +10,64 @@ public class KanbanBoardView extends JPanel {
     public JPanel columnaProgreso;
     public JPanel columnaCompletado;
     public JButton btnNuevaTarea;
+    public JComboBox<String> comboProyecto;
+    public JComboBox<String> comboSprint;
     private JLabel labelTitulo;
     private JLabel labelInfo;
 
     public KanbanBoardView() {
         setLayout(new BorderLayout());
         setBackground(new Color(0xF5F7FA));
-        
+
         JPanel panelSuperior = new JPanel(new BorderLayout());
         panelSuperior.setBackground(new Color(0xF5F7FA));
-        panelSuperior.setBorder(new EmptyBorder(20, 20, 10, 20)); 
-        
+        panelSuperior.setBorder(new EmptyBorder(20, 20, 10, 20));
+
         // ======= TÍTULO SUPERIOR =======
         labelTitulo = new JLabel("Tablero Kanban", SwingConstants.CENTER);
         labelTitulo.setFont(new Font("SansSerif", Font.BOLD, 24));
         labelTitulo.setForeground(new Color(0x2D2D2D));
+
+        // ======= PANEL FILTROS =======
+        JPanel panelFiltros = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 5));
+        panelFiltros.setBackground(new Color(0xF5F7FA));
+
+        JLabel lblProyecto = new JLabel("Proyecto:");
+        lblProyecto.setFont(new Font("SansSerif", Font.PLAIN, 14));
+
+        comboProyecto = new JComboBox<>();
+        comboProyecto.setPreferredSize(new Dimension(200, 30));
+        comboProyecto.setFont(new Font("SansSerif", Font.PLAIN, 14));
+
+        JLabel lblSprint = new JLabel("Sprint:");
+        lblSprint.setFont(new Font("SansSerif", Font.PLAIN, 14));
         
+        comboSprint = new JComboBox<>();
+        comboSprint.setPreferredSize(new Dimension(200, 30));
+        comboSprint.setFont(new Font("SansSerif", Font.PLAIN, 14));
+
+        panelFiltros.add(lblProyecto);
+        panelFiltros.add(comboProyecto);
+        panelFiltros.add(lblSprint);
+        panelFiltros.add(comboSprint);
+
+        labelInfo = new JLabel("Selecciona un proyecto y sprint", SwingConstants.CENTER);
+        labelInfo.setFont(new Font("SansSerif", Font.ITALIC, 12));
+        labelInfo.setForeground(new Color(0x666666));
+        
+        JPanel componentes = new JPanel(new BorderLayout(0, 5));
+        componentes.setBackground(new Color(0x666666));
+        componentes.add(labelTitulo, BorderLayout.NORTH);
+        componentes.add(panelFiltros, BorderLayout.CENTER);
+        componentes.add(labelInfo, BorderLayout.SOUTH);
+        
+        panelSuperior.add(componentes, BorderLayout.CENTER);
+        add(panelSuperior, BorderLayout.NORTH);
+
         // ======= PANEL PRINCIPAL (3 COLUMNAS) =======
         JPanel panelColumnas = new JPanel(new GridLayout(1, 3, 15, 0));
         panelColumnas.setBorder(new EmptyBorder(10, 20, 20, 20));
         panelColumnas.setBackground(new Color(0xF5F7FA));
-        
-        labelInfo = new JLabel("Cargando...", SwingConstants.CENTER);
-        labelInfo.setFont(new Font("SansSerif", Font.ITALIC, 13));
-        labelInfo.setForeground(new Color(0x666666));
-        
-        panelSuperior.add(labelTitulo, BorderLayout.CENTER);
-        panelSuperior.add(labelInfo, BorderLayout.SOUTH);
-        add(panelSuperior, BorderLayout.NORTH);
 
         // ======= COLUMNA: PENDIENTE =======
         columnaPendiente = crearColumna("Pendiente", new Color(0xE57373));
@@ -64,7 +94,7 @@ public class KanbanBoardView extends JPanel {
         btnNuevaTarea.setBorderPainted(false);
         btnNuevaTarea.setFocusPainted(false);
         btnNuevaTarea.setPreferredSize(new Dimension(200, 40));
-        btnNuevaTarea.setCursor(new Cursor(Cursor.HAND_CURSOR)); 
+        btnNuevaTarea.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         panelInferior.add(btnNuevaTarea);
 

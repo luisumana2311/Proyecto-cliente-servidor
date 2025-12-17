@@ -34,7 +34,7 @@ public class ProyectosView extends JPanel {
             "Archivados"
         });
 
-        comboFiltro.setFont(new Font("Segoe UI", 14, Font.PLAIN));
+        comboFiltro.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         comboFiltro.setBackground(Color.WHITE);
         comboFiltro.setBorder(BorderFactory.createLineBorder(new Color(0xD0D7E1)));
 
