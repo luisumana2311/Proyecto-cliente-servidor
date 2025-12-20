@@ -52,12 +52,29 @@ public class SprintDAO {
         return lista;
     }
 
+    public Sprint findById(int idSprint) throws Exception {
+        String sql = "SELECT * FROM Sprints WHERE Id_Sprint = ?";
+        try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, idSprint);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Sprint s = new Sprint();
+                    s.setIdSprint(rs.getInt("Id_Sprint"));
+                    s.setIdProyecto(rs.getInt("Id_Proyecto"));
+                    s.setNombre(rs.getString("Nombre"));
+                    s.setNumeroSprint(rs.getInt("Numero_Sprint"));
+                    s.setFechaInicio(rs.getDate("Fecha_Inicio"));
+                    s.setFechaFin(rs.getDate("Fecha_Fin"));
+                    return s;
+                }
+                return null;
+            }
+        }
+    }
+
     public List<Sprint> listar(int idUsuario) {
         List<Sprint> lista = new ArrayList<>();
-        String sql = "SELECT s.* FROM Sprints s "
-                + "INNER JOIN Proyectos p ON s.Id_Proyecto = p.Id_Proyecto "
-                + "WHERE p.Id_Usuario = ?";
-
+        String sql = "SELECT s.* FROM Sprints s ORDER BY s.Id_Proyecto, s.Numero_Sprint";
         try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, idUsuario);
             ResultSet rs = ps.executeQuery();

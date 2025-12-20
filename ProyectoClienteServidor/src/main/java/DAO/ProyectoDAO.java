@@ -31,30 +31,12 @@ public class ProyectoDAO {
     }
 
     public List<Proyecto> findByUsuario(int idUsuario) throws Exception {
-        List<Proyecto> lista = new ArrayList<>();
-        String sql = "SELECT * FROM Proyectos WHERE Id_Usuario = ?";
-        try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setInt(1, idUsuario);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Proyecto p = new Proyecto();
-                    p.setIdProyecto(rs.getInt("Id_Proyecto"));
-                    p.setIdUsuario(rs.getInt("Id_Usuario"));
-                    p.setNombre(rs.getString("Nombre"));
-                    p.setDescripcion(rs.getString("Descripcion"));
-                    p.setFechaInicio(rs.getDate("Fecha_Inicio"));
-                    p.setFechaFin(rs.getDate("Fecha_Fin"));
-                    p.setEstado(rs.getString("Estado"));
-                    lista.add(p);
-                }
-            }
-        }
-        return lista;
+        return findAll();
     }
 
     public List<Proyecto> findAll() throws Exception {
         List<Proyecto> lista = new ArrayList<>();
-        String sql = "SELECT * FROM Proyectos";
+        String sql = "SELECT * FROM Proyectos ORDER BY Fecha_Inicio DESC";
         try (Connection c = DBUtil.getConnection(); Statement st = c.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 Proyecto p = new Proyecto();
@@ -71,6 +53,27 @@ public class ProyectoDAO {
         return lista;
     }
 
+    public Proyecto findById(int idProyecto) throws Exception {
+        String sql = "SELECT * FROM Proyectos WHERE Id_Proyecto = ?";
+        try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, idProyecto);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Proyecto p = new Proyecto();
+                    p.setIdProyecto(rs.getInt("Id_Proyecto"));
+                    p.setIdUsuario(rs.getInt("Id_Usuario"));
+                    p.setNombre(rs.getString("Nombre"));
+                    p.setDescripcion(rs.getString("Descripcion"));
+                    p.setFechaInicio(rs.getDate("Fecha_Inicio"));
+                    p.setFechaFin(rs.getDate("Fecha_Fin"));
+                    p.setEstado(rs.getString("Estado"));
+                    return p;
+                }
+                return null;
+            }
+        }
+    }
+
     public boolean delete(int idProyecto) throws Exception {
         String sql = "DELETE FROM Proyectos WHERE Id_Proyecto = ?";
         try (Connection c = DBUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
@@ -81,7 +84,7 @@ public class ProyectoDAO {
 
     public List<Proyecto> listar(int idUsuario) {
         try {
-            return findByUsuario(idUsuario);
+            return findAll();
         } catch (Exception e) {
             System.out.println("Error al listar proyectos: " + e.getMessage());
             return new ArrayList<>();
